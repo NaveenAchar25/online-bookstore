@@ -1,12 +1,23 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../App';
+import * as bookApi from '../api/bookApi';
+
+vi.mock('../api/bookApi');
 
 describe('App', () => {
-  it('renders the home page placeholder', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+  });
+
+  it('renders the book catalog at the root route', async () => {
+    vi.mocked(bookApi.getBooks).mockResolvedValue([
+      { id: 1, title: 'Clean Code', author: 'Robert C. Martin', price: 35.99, stockQuantity: 10 },
+    ]);
+
     render(<App />);
 
-    expect(screen.getByRole('heading', { name: 'Bookstore' })).toBeInTheDocument();
-    expect(screen.getByText(/Sprint 1/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Books' })).toBeInTheDocument();
+    expect(await screen.findByText('Clean Code')).toBeInTheDocument();
   });
 });
