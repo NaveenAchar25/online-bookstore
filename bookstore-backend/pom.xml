@@ -28,11 +28,6 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!--
-          Production health/readiness endpoint via Spring Boot Actuator, rather
-          than a hand-rolled /health controller. This is the standard a real
-          deployment (load balancer health checks, k8s liveness probes) expects.
-        -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
@@ -50,26 +45,11 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!--
-          Flyway: versioned schema migrations from day one, even before any
-          table exists — Hibernate never generates or alters schema in any
-          environment. No flyway-database-h2 module: H2 (and SQLite) remain
-          bundled inside flyway-core, unlike most other databases.
-        -->
         <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
         </dependency>
 
-        <!--
-          MySQL support WAS split out of flyway-core in the Flyway 10 module
-          split, so this is required for the prod profile's migrations to run
-          at all once a production database is introduced. No explicit
-          version here — confirmed Spring Boot 4.1.1 already manages it
-          (Maven's "overriding managed version" notice on an earlier attempt
-          proved this), unlike flyway-database-h2, which isn't managed
-          because it isn't a real artifact H2 needs at all.
-        -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-mysql</artifactId>
@@ -103,36 +83,47 @@
             <scope>test</scope>
         </dependency>
 
-        <!--
-          RestTestClient: Spring Boot 4's modern replacement for
-          TestRestTemplate, which Spring itself flags as soon-to-be-deprecated
-          and which is no longer auto-configured by spring-boot-starter-test
-          alone. This is a genuinely separate module from the similarly-named
-          spring-boot-starter-restclient-test (which is for a different
-          feature entirely — @RestClientTest, for testing code that calls
-          OUT to other services — and does not provide RestTestClient at all).
-        -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-resttestclient</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <!--
-          RestTestClient makes a real outbound HTTP call when the test runs
-          against a live server (webEnvironment = RANDOM_PORT, our case) —
-          spring-boot-resttestclient alone does not transitively pull in the
-          underlying REST client that performs that call.
-        -->
+       
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-restclient</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webmvc-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
