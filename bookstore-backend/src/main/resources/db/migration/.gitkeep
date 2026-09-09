@@ -1,0 +1,2 @@
+# Sprint 1 adds the first real migration (V1__create_books_table.sql) here.
+# This file exists only so git tracks the otherwise-empty directory.

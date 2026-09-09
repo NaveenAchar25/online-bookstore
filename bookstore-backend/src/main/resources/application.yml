@@ -1,0 +1,74 @@
+spring:
+  application:
+    name: bookstore-backend
+
+  profiles:
+    active: dev
+
+---
+# ---------- DEV PROFILE: H2 in-memory, schema via Flyway ----------
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:h2:mem:bookstore;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: validate   # schema comes from Flyway migrations only, never from Hibernate
+    show-sql: false
+
+  flyway:
+    enabled: true
+    # Reference-data + schema migrations, plus dev-only sample data once either exists.
+    locations: classpath:db/migration,classpath:db/migration-dev
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+server:
+  port: 8080
+
+---
+# ---------- PROD PROFILE: MySQL, schema via Flyway only, no sample data ----------
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/bookstore}
+    username: ${DB_USERNAME:bookstore_user}
+    password: ${DB_PASSWORD:changeme}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration   # reference data only — no demo/sample data ever reaches prod
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+server:
+  port: ${PORT:8080}
