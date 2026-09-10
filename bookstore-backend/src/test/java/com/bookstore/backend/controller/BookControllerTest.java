@@ -2,9 +2,12 @@ package com.bookstore.backend.controller;
 
 import com.bookstore.backend.dto.BookDto;
 import com.bookstore.backend.exception.BookNotFoundException;
+import com.bookstore.backend.repository.UserRepository;
+import com.bookstore.backend.security.JwtService;
 import com.bookstore.backend.service.BookService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * (Spring Framework 7's bean-override support) is the replacement.
  */
 @WebMvcTest(BookController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class BookControllerTest {
 
     @Autowired
@@ -34,6 +38,12 @@ class BookControllerTest {
 
     @MockitoBean
     private BookService bookService;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     @Test
     void getAllBooks_returns200AndBookList() throws Exception {

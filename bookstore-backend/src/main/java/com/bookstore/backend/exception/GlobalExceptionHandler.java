@@ -13,6 +13,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
+ * Centralizes exception -> HTTP response translation so controllers stay
+ * free of try/catch and so every error response in the API is
+ * guaranteed to share the same ErrorResponse shape.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -39,6 +42,30 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMissingHeader(MissingRequestHeaderException ex,
                                                                 HttpServletRequest request) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null);
+    }
+
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleEmailAlreadyExists(EmailAlreadyExistsException ex,
+                                                                     HttpServletRequest request) {
+        return buildResponse(HttpStatus.CONFLICT, ex.getMessage(), request, null);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex,
+                                                                     HttpServletRequest request) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request, null);
+    }
+
+    @ExceptionHandler(AccountLockedException.class)
+    public ResponseEntity<ErrorResponse> handleAccountLocked(AccountLockedException ex,
+                                                                HttpServletRequest request) {
+        return buildResponse(HttpStatus.LOCKED, ex.getMessage(), request, null);
+    }
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidRefreshToken(InvalidRefreshTokenException ex,
+                                                                      HttpServletRequest request) {
+        return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request, null);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

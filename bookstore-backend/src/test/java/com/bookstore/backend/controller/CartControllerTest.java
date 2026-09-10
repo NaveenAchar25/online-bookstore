@@ -4,9 +4,12 @@ import com.bookstore.backend.dto.CartItemResponse;
 import com.bookstore.backend.dto.CartResponse;
 import com.bookstore.backend.exception.CartItemNotFoundException;
 import com.bookstore.backend.exception.InsufficientStockException;
+import com.bookstore.backend.repository.UserRepository;
+import com.bookstore.backend.security.JwtService;
 import com.bookstore.backend.service.CartService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -21,7 +24,9 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+
 @WebMvcTest(CartController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class CartControllerTest {
 
     private static final String GUEST_TOKEN = "guest-abc-123";
@@ -31,6 +36,12 @@ class CartControllerTest {
 
     @MockitoBean
     private CartService cartService;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private UserRepository userRepository;
 
     private CartResponse sampleCart() {
         CartItemResponse item = CartItemResponse.builder()

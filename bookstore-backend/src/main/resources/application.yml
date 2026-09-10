@@ -41,6 +41,10 @@ app:
     # Comma-separated. Vite's default dev server port, plus 3000 as a common
     # alternative
     allowed-origins: http://localhost:5173,http://localhost:3000
+  jwt:
+    # Never reuse this value anywhere
+    secret: ${JWT_SECRET:dev-only-secret-key-do-not-use-this-value-anywhere-else-1234567890}
+    access-token-expiry-ms: 900000   # 15 minutes
 
 management:
   endpoints:
@@ -72,12 +76,16 @@ spring:
 
   flyway:
     enabled: true
-    locations: classpath:db/migration
+    locations: classpath:db/migration   # reference data only — no demo/sample data ever reaches prod
 
 app:
   cors:
     # No default on purpose — prod must set this explicitly via env var.
+    # back to a dev URL that would never be reachable from a real deployment.
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
+  jwt:
+    secret: ${JWT_SECRET}   # required — startup fails fast if this isn't set
+    access-token-expiry-ms: ${JWT_ACCESS_TOKEN_EXPIRY_MS:900000}
 
 management:
   endpoints:

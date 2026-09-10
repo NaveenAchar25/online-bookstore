@@ -75,12 +75,35 @@ class BookCatalogIntegrationTest {
 
     @Test
     void catalogEndpoint_respondsWithCorsHeaderForTheFrontendOrigin() {
-       
+        // A missing Access-Control-Allow-Origin header is invisible to
+        // MockMvc/RestTestClient calls that don't set an Origin header —
+        // the request just succeeds either way, since CORS is a browser
+        // enforcement mechanism, not a server-side check. Setting Origin
+        // explicitly here reproduces what a real browser sends, so this
+        // test would have caught the original missing-CORS-config bug.
         restTestClient.get()
                 .uri(baseUrl("/books"))
                 .header("Origin", "http://localhost:5173")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().valueEquals("Access-Control-Allow-Origin", "http://localhost:5173");
+    }
+
+    @Test
+    void catalogEndpoint_respondsToACorsPreflightRequestWithoutRequiringAuthentication() {
+        // This is the specific case the GET-with-Origin test above does NOT
+        // cover: a real browser sends a separate OPTIONS request first,
+        // carrying no Authorization header at all — Spring Security's own
+        // authorization filter runs before CORS headers are ever applied,
+        // so an endpoint whose permitAll rule is scoped to a single HTTP
+        // method (GET, here) rejects its own preflight with 401 unless
+        // OPTIONS is explicitly permitted globally. This test reproduces
+        // exactly that browser behavior and would have caught the bug.
+        restTestClient.method(org.springframework.http.HttpMethod.OPTIONS)
+                .uri(baseUrl("/books"))
+                .header("Origin", "http://localhost:5173")
+                .header("Access-Control-Request-Method", "GET")
+                .exchange()
+                .expectStatus().isOk();
     }
 }
