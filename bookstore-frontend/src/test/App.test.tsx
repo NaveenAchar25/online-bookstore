@@ -10,6 +10,7 @@ vi.mock('../api/cartApi');
 describe('App', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    localStorage.clear();
     vi.mocked(cartApi.getCart).mockResolvedValue({ items: [], totalAmount: 0 });
   });
 
@@ -24,12 +25,13 @@ describe('App', () => {
     expect(await screen.findByText('Clean Code')).toBeInTheDocument();
   });
 
-  it('shows the nav bar with a link to the cart', () => {
+  it('shows the nav bar with links to the cart and to log in', () => {
     vi.mocked(bookApi.getBooks).mockResolvedValue([]);
 
     render(<App />);
 
     expect(screen.getByRole('link', { name: 'Bookstore' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /cart/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /log in/i })).toBeInTheDocument();
   });
 });
