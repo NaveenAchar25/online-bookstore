@@ -1,18 +1,24 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { AxiosError } from 'axios';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import BookDetailPage from '../pages/BookDetailPage';
+import { CartProvider } from '../context/CartContext';
 import * as bookApi from '../api/bookApi';
+import * as cartApi from '../api/cartApi';
 
 vi.mock('../api/bookApi');
+vi.mock('../api/cartApi');
 
 function renderAtBookDetail(id: string) {
   return render(
     <MemoryRouter initialEntries={[`/books/${id}`]}>
-      <Routes>
-        <Route path="/books/:id" element={<BookDetailPage />} />
-      </Routes>
+      <CartProvider>
+        <Routes>
+          <Route path="/books/:id" element={<BookDetailPage />} />
+        </Routes>
+      </CartProvider>
     </MemoryRouter>
   );
 }
@@ -20,6 +26,7 @@ function renderAtBookDetail(id: string) {
 describe('BookDetailPage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(cartApi.getCart).mockResolvedValue({ items: [], totalAmount: 0 });
   });
 
   it('shows a loading state, then renders the fetched book', async () => {
@@ -74,5 +81,34 @@ describe('BookDetailPage', () => {
     renderAtBookDetail('1');
 
     expect(await screen.findByText(/something went wrong/i)).toBeInTheDocument();
+  });
+
+  it('clicking "Add to cart" adds the selected quantity for this book', async () => {
+    vi.mocked(bookApi.getBookById).mockResolvedValue({
+      id: 1, title: 'Clean Code', author: 'Robert C. Martin', price: 35.99, stockQuantity: 10,
+    });
+    vi.mocked(cartApi.addItem).mockResolvedValue({ items: [], totalAmount: 0 });
+    const user = userEvent.setup();
+
+    renderAtBookDetail('1');
+    await screen.findByRole('heading', { name: 'Clean Code' });
+
+    const quantityInput = screen.getByLabelText('Quantity');
+    await user.clear(quantityInput);
+    await user.type(quantityInput, '3');
+    await user.click(screen.getByRole('button', { name: /add to cart/i }));
+
+    expect(cartApi.addItem).toHaveBeenCalledWith(1, 3);
+  });
+
+  it('does not show an add-to-cart control when the book is out of stock', async () => {
+    vi.mocked(bookApi.getBookById).mockResolvedValue({
+      id: 1, title: 'Clean Code', author: 'Robert C. Martin', price: 35.99, stockQuantity: 0,
+    });
+
+    renderAtBookDetail('1');
+
+    await screen.findByRole('heading', { name: 'Clean Code' });
+    expect(screen.queryByRole('button', { name: /add to cart/i })).not.toBeInTheDocument();
   });
 });

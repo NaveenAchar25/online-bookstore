@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { isAxiosError } from 'axios';
 import { getBookById } from '../api/bookApi';
+import { useCart } from '../context/CartContext';
 import type { Book } from '../types/Book';
 
 const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
@@ -15,6 +16,8 @@ type LoadState =
 export default function BookDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [state, setState] = useState<LoadState>({ status: 'loading' });
+  const [quantityInput, setQuantityInput] = useState('1');
+  const { addItem, error: cartError } = useCart();
 
   useEffect(() => {
     let cancelled = false;
@@ -69,6 +72,28 @@ export default function BookDetailPage() {
       <p className="book-detail-page__stock">
         {book.stockQuantity > 0 ? `${book.stockQuantity} in stock` : 'Out of stock'}
       </p>
+      {book.stockQuantity > 0 && (
+        <div className="book-detail-page__add-to-cart">
+          <input
+            type="number"
+            min={1}
+            max={book.stockQuantity}
+            value={quantityInput}
+            onChange={(e) => setQuantityInput(e.target.value)}
+            aria-label="Quantity"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              const parsed = Math.max(1, Number(quantityInput) || 1);
+              addItem(book.id, parsed);
+            }}
+          >
+            Add to cart
+          </button>
+        </div>
+      )}
+      {cartError && <p className="field-error">{cartError}</p>}
     </div>
   );
 }

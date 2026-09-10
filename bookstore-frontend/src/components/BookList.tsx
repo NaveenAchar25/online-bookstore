@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getBooks } from '../api/bookApi';
+import { useCart } from '../context/CartContext';
 import type { Book } from '../types/Book';
 
 const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
@@ -8,6 +9,7 @@ const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', cu
 export default function BookList() {
   const [books, setBooks] = useState<Book[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { addItem } = useCart();
 
   useEffect(() => {
     let cancelled = false;
@@ -44,6 +46,7 @@ export default function BookList() {
           <th>Title</th>
           <th>Author</th>
           <th>Price</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -54,6 +57,11 @@ export default function BookList() {
             </td>
             <td>{book.author}</td>
             <td>{currencyFormatter.format(book.price)}</td>
+            <td>
+              <button type="button" onClick={() => addItem(book.id, 1)}>
+                Add to cart
+              </button>
+            </td>
           </tr>
         ))}
       </tbody>

@@ -1,15 +1,21 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import BookList from '../components/BookList';
+import { CartProvider } from '../context/CartContext';
 import * as bookApi from '../api/bookApi';
+import * as cartApi from '../api/cartApi';
+import BookList from '../components/BookList';
 
 vi.mock('../api/bookApi');
+vi.mock('../api/cartApi');
 
 function renderBookList() {
   return render(
     <MemoryRouter>
-      <BookList />
+      <CartProvider>
+        <BookList />
+      </CartProvider>
     </MemoryRouter>
   );
 }
@@ -17,6 +23,7 @@ function renderBookList() {
 describe('BookList', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(cartApi.getCart).mockResolvedValue({ items: [], totalAmount: 0 });
   });
 
   it('shows a loading state, then renders fetched books as links to their detail page', async () => {
@@ -50,5 +57,19 @@ describe('BookList', () => {
     renderBookList();
 
     expect(await screen.findByText(/couldn't load the catalog/i)).toBeInTheDocument();
+  });
+
+  it('clicking "Add to cart" calls the cart API for that book', async () => {
+    vi.mocked(bookApi.getBooks).mockResolvedValue([
+      { id: 1, title: 'Clean Code', author: 'Robert C. Martin', price: 35.99, stockQuantity: 10 },
+    ]);
+    vi.mocked(cartApi.addItem).mockResolvedValue({ items: [], totalAmount: 0 });
+    const user = userEvent.setup();
+
+    renderBookList();
+    await screen.findByText('Clean Code');
+    await user.click(screen.getByRole('button', { name: /add to cart/i }));
+
+    expect(cartApi.addItem).toHaveBeenCalledWith(1, 1);
   });
 });
