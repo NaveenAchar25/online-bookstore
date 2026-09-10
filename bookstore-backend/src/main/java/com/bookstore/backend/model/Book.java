@@ -18,7 +18,6 @@ import java.math.BigDecimal;
 /**
  * A book available for sale in the catalog. Kept as a persistence-layer
  * entity only — it is never returned directly from a controller. That job
- * belongs to BookDto
  */
 @Entity
 @Table(name = "books")
@@ -53,10 +52,19 @@ public class Book extends Auditable {
 
     /**
      * Optimistic-locking version. JPA increments this automatically on every
-     * update and verifies it hasn't changed since it was read
+     * the mechanism on which checkout feature relies to detect two customers
+     * concurrently buying the last copy of a book, to avoid overselling.
      */
     @Version
     @Column(nullable = false)
     @Builder.Default
     private Long version = 0L;
+
+    /**
+     * Whether this book currently has enough stock to satisfy the given
+     * quantity. A method on Book itself, not a raw field
+     */
+    public boolean hasSufficientStock(int requestedQuantity) {
+        return stockQuantity >= requestedQuantity;
+    }
 }
