@@ -7,6 +7,7 @@ import com.bookstore.backend.exception.EmailAlreadyExistsException;
 import com.bookstore.backend.exception.InvalidCredentialsException;
 import com.bookstore.backend.repository.UserRepository;
 import com.bookstore.backend.security.JwtService;
+import com.bookstore.backend.security.LoginRateLimiter;
 import com.bookstore.backend.service.AuthService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +35,20 @@ class AuthControllerTest {
     @MockitoBean
     private AuthService authService;
 
-    
+   
     @MockitoBean
     private JwtService jwtService;
 
     @MockitoBean
     private UserRepository userRepository;
+
+    // AuthController's own constructor dependency now, not a SecurityConfig
+    // one — needed regardless of whether rate limiting is actually enabled
+    // for this test (it defaults to disabled, same reasoning as everywhere
+    // else in this project: the mock just needs to exist to satisfy the
+    // constructor when Spring builds this slice's context).
+    @MockitoBean
+    private LoginRateLimiter loginRateLimiter;
 
     @Test
     void register_validRequest_returns201() throws Exception {

@@ -93,6 +93,12 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request, null);
     }
 
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleRateLimitExceeded(RateLimitExceededException ex,
+                                                                     HttpServletRequest request) {
+        return buildResponse(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage(), request, null);
+    }
+
     /**
      * Thrown by Spring Data JPA (translated from Hibernate's own
      * OptimisticLockException) when a save() finds the row's @Version no

@@ -45,6 +45,14 @@ app:
     # Never reuse this value anywhere
     secret: ${JWT_SECRET:dev-only-secret-key-do-not-use-this-value-anywhere-else-1234567890}
     access-token-expiry-ms: 900000   # 15 minutes
+  rate-limit:
+    login:
+      # Off in dev, enabling this here would make local
+      # development and the integration test suite (which collectively
+      # calls /login dozens of times against one shared, cached Spring
+      # context) unpredictably start hitting 429s. LoginRateLimiterTest
+      # already proves the limiter's own logic works in complete isolation;
+      enabled: false
 
 management:
   endpoints:
@@ -81,11 +89,17 @@ spring:
 app:
   cors:
     # No default on purpose — prod must set this explicitly via env var.
+    # A missing value here should fail startup loudly, not silently fall
     # back to a dev URL that would never be reachable from a real deployment.
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
   jwt:
     secret: ${JWT_SECRET}   # required — startup fails fast if this isn't set
     access-token-expiry-ms: ${JWT_ACCESS_TOKEN_EXPIRY_MS:900000}
+  rate-limit:
+    login:
+      enabled: true
+      max-attempts: ${LOGIN_RATE_LIMIT_MAX_ATTEMPTS:10}
+      window-seconds: ${LOGIN_RATE_LIMIT_WINDOW_SECONDS:60}
 
 management:
   endpoints:
