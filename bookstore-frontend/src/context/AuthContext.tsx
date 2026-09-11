@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
 import * as authApi from '../api/authApi';
+import { extractErrorMessage } from '../lib/errorMessage';
 import { tokenStore } from '../lib/tokenStore';
 
 interface AuthContextValue {
@@ -12,16 +13,6 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-function extractErrorMessage(err: unknown, fallback: string): string {
-  if (err && typeof err === 'object' && 'response' in err) {
-    const response = (err as { response?: { data?: { message?: string } } }).response;
-    if (response?.data?.message) {
-      return response.data.message;
-    }
-  }
-  return fallback;
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   // Seeded from whether a refresh token already exists (returning visitor)

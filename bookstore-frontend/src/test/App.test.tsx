@@ -15,9 +15,10 @@ describe('App', () => {
   });
 
   it('renders the book catalog at the root route', async () => {
-    vi.mocked(bookApi.getBooks).mockResolvedValue([
-      { id: 1, title: 'Clean Code', author: 'Robert C. Martin', price: 35.99, stockQuantity: 10 },
-    ]);
+    vi.mocked(bookApi.getBooks).mockResolvedValue({
+      items: [{ id: 1, title: 'Clean Code', author: 'Robert C. Martin', price: 35.99, stockQuantity: 10 }],
+      page: 0, size: 12, totalElements: 1, totalPages: 1,
+    });
 
     render(<App />);
 
@@ -26,7 +27,7 @@ describe('App', () => {
   });
 
   it('shows the nav bar with links to the cart and to log in', () => {
-    vi.mocked(bookApi.getBooks).mockResolvedValue([]);
+    vi.mocked(bookApi.getBooks).mockResolvedValue({ items: [], page: 0, size: 12, totalElements: 0, totalPages: 0 });
 
     render(<App />);
 

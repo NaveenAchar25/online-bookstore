@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import CartPage from '../pages/CartPage';
 import { CartProvider } from '../context/CartContext';
@@ -9,9 +10,11 @@ vi.mock('../api/cartApi');
 
 function renderCartPage() {
   return render(
-    <CartProvider>
-      <CartPage />
-    </CartProvider>
+    <MemoryRouter>
+      <CartProvider>
+        <CartPage />
+      </CartProvider>
+    </MemoryRouter>
   );
 }
 

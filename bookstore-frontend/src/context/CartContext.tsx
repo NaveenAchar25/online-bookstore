@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import * as cartApi from '../api/cartApi';
-import { Cart } from '../types/Cart';
-
+import { extractErrorMessage } from '../lib/errorMessage';
+import type { Cart } from '../types/Cart';
 
 interface CartContextValue {
   cart: Cart | null;
@@ -10,19 +10,10 @@ interface CartContextValue {
   addItem: (bookId: number, quantity: number) => Promise<void>;
   updateItemQuantity: (bookId: number, quantity: number) => Promise<void>;
   removeItem: (bookId: number) => Promise<void>;
+  refresh: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
-
-function extractErrorMessage(err: unknown, fallback: string): string {
-  if (err && typeof err === 'object' && 'response' in err) {
-    const response = (err as { response?: { data?: { message?: string } } }).response;
-    if (response?.data?.message) {
-      return response.data.message;
-    }
-  }
-  return fallback;
-}
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<Cart | null>(null);
@@ -76,7 +67,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const itemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
 
-  const value: CartContextValue = { cart, error, itemCount, addItem, updateItemQuantity, removeItem };
+  // refresh is exposed publicly (not just used internally on mount)
+  // specifically for checkout: it clears the cart server-side directly,
+  // bypassing addItem/updateItemQuantity/removeItem entirely
+  const value: CartContextValue = { cart, error, itemCount, addItem, updateItemQuantity, removeItem, refresh };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

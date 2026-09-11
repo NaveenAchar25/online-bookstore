@@ -1,9 +1,20 @@
 import { useEffect, useState } from 'react';
-import { useCart } from '../context/CartContext';
+import { Link } from 'react-router-dom';
 import type { CartItem } from '../types/Cart';
+import { useCart } from '../context/CartContext';
+
+
 
 const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 
+/**
+ * Its own component with its own local input state, deliberately — this
+ * quantity is confirmed by the server (item.quantity), and firing an
+ * update on every keystroke would both spam the API and fight the user
+ * mid-edit (each server round trip re-renders the parent with the old
+ * confirmed value, which would stomp on whatever they're still typing).
+ * Local state holds what's being typed; onBlur is what actually commits it.
+ */
 function QuantityCell({
   item,
   onCommit,
@@ -13,7 +24,9 @@ function QuantityCell({
 }) {
   const [value, setValue] = useState(String(item.quantity));
 
- 
+  // Resyncs only when the server-confirmed quantity actually changes —
+  // after a successful update, or if this cart is ever refreshed
+  // from elsewhere. Does not run on every keystroke.
   useEffect(() => {
     setValue(String(item.quantity));
   }, [item.quantity]);
@@ -92,6 +105,9 @@ export default function CartPage() {
         </tbody>
       </table>
       <p className="cart-page__total">Total: {currencyFormatter.format(cart.totalAmount)}</p>
+      <Link to="/checkout" className="cart-page__checkout-link">
+        Proceed to checkout
+      </Link>
     </div>
   );
 }

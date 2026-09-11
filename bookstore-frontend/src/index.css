@@ -255,3 +255,105 @@ button:disabled {
 .auth-page button {
   margin-top: 1.5rem;
 }
+
+/* ---------- Book list: search + pagination ---------- */
+
+.book-list__search {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 1.25rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font: inherit;
+  background: white;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.pagination__status {
+  color: var(--color-ink-muted);
+  font-size: 0.9rem;
+}
+
+/* ---------- Checkout ---------- */
+
+.checkout-page {
+  max-width: 480px;
+}
+
+.checkout-page form {
+  margin-top: 1.5rem;
+}
+
+.checkout-page__payment-choice {
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 1rem;
+  margin: 0 0 1rem;
+}
+
+.checkout-page__payment-choice legend {
+  padding: 0 0.4rem;
+  color: var(--color-ink-muted);
+  font-size: 0.9rem;
+}
+
+.checkout-page__payment-choice label {
+  display: block;
+  margin: 0.4rem 0;
+  cursor: pointer;
+}
+
+.checkout-page label[for] {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--color-ink-muted);
+}
+
+.checkout-page input[type='text'],
+.checkout-page input:not([type='radio']) {
+  width: 100%;
+  padding: 0.55rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font: inherit;
+  background: white;
+}
+
+.checkout-page button[type='submit'] {
+  margin-top: 1.5rem;
+}
+
+.cart-page__checkout-link {
+  display: inline-block;
+  margin-top: 1.5rem;
+  color: white;
+  background: var(--color-accent);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.cart-page__checkout-link:hover {
+  background: var(--color-accent-dark);
+}
+
+/* ---------- Order confirmation / history ---------- */
+
+.order-confirmation-page,
+.my-orders-page {
+  max-width: 480px;
+}
+
+.order-confirmation-page__status {
+  color: var(--color-ink-muted);
+  margin-top: -0.5rem;
+}
