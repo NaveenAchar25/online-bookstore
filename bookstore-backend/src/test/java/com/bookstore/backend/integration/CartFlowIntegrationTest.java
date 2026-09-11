@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -83,6 +84,9 @@ class CartFlowIntegrationTest {
 
     @Test
     void addItem_requestingMoreThanAvailableStock_returns409AndAddsNothing() {
+        // This is the TDD example committed to explicitly: written to prove
+        // the stock rule is enforced over real HTTP, not just at the unit
+        // level where CartItemTest already proves it in isolation.
         String guestToken = newGuestToken();
         Long firstBookId = firstSeededBookId();
 
@@ -114,14 +118,16 @@ class CartFlowIntegrationTest {
 
     @SuppressWarnings("unchecked")
     private Long firstSeededBookId() {
-        Map<String, Object>[] books = restTestClient.get()
+        // /books now returns a paginated envelope ({"items": [...], ...}),
+        Map<String, Object> page = restTestClient.get()
                 .uri(url("/books"))
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(Map[].class)
+                .expectBody(Map.class)
                 .returnResult()
                 .getResponseBody();
 
-        return ((Number) books[0].get("id")).longValue();
+        List<Map<String, Object>> items = (List<Map<String, Object>>) page.get("items");
+        return ((Number) items.get(0).get("id")).longValue();
     }
 }

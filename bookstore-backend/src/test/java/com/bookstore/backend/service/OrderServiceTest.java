@@ -9,7 +9,6 @@ import com.bookstore.backend.model.*;
 import com.bookstore.backend.payment.CashOnDeliveryPayment;
 import com.bookstore.backend.payment.CreditCardPayment;
 import com.bookstore.backend.payment.PaymentMethod;
-import com.bookstore.backend.repository.BookRepository;
 import com.bookstore.backend.repository.CartRepository;
 import com.bookstore.backend.repository.OrderRepository;
 import com.bookstore.backend.repository.UserRepository;
@@ -17,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -26,24 +26,28 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
 
     @Mock private CartRepository cartRepository;
-    @Mock private BookRepository bookRepository;
     @Mock private OrderRepository orderRepository;
     @Mock private UserRepository userRepository;
 
     private OrderService orderService;
+    private PaymentMethod cashOnDeliverySpy;
     private User user;
     private Book book;
 
     @BeforeEach
     void setUp() {
-        List<PaymentMethod> paymentMethods = List.of(new CreditCardPayment(), new CashOnDeliveryPayment());
-        orderService = new OrderService(cartRepository, bookRepository, orderRepository, userRepository,
+        cashOnDeliverySpy = Mockito.spy(new CashOnDeliveryPayment());
+        List<PaymentMethod> paymentMethods = List.of(new CreditCardPayment(), cashOnDeliverySpy);
+        orderService = new OrderService(cartRepository, orderRepository, userRepository,
                 paymentMethods, new OrderMapper());
 
         user = User.newCustomer("jane@example.com", "hashed", "Jane", "Doe",
@@ -51,7 +55,7 @@ class OrderServiceTest {
         book = Book.builder().id(1L).title("Clean Code").price(new BigDecimal("35.99")).stockQuantity(10).build();
 
         when(userRepository.findByEmail("jane@example.com")).thenReturn(Optional.of(user));
-        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
+        
     }
 
     @Test
@@ -59,6 +63,7 @@ class OrderServiceTest {
         Cart cart = Cart.forGuestToken("guest-1");
         cart.addOrIncreaseItem(book, 2);
         when(cartRepository.findByGuestToken("guest-1")).thenReturn(Optional.of(cart));
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         CheckoutRequest request = new CheckoutRequest();
         request.setPaymentType("CASH_ON_DELIVERY");
@@ -75,6 +80,7 @@ class OrderServiceTest {
         Cart cart = Cart.forGuestToken("guest-1");
         cart.addOrIncreaseItem(book, 1);
         when(cartRepository.findByGuestToken("guest-1")).thenReturn(Optional.of(cart));
+        when(orderRepository.save(any(Order.class))).thenAnswer(inv -> inv.getArgument(0));
 
         CheckoutRequest request = new CheckoutRequest();
         request.setPaymentType("CREDIT_CARD");
@@ -95,6 +101,22 @@ class OrderServiceTest {
 
         assertThatThrownBy(() -> orderService.checkout("jane@example.com", "guest-1", request))
                 .isInstanceOf(EmptyCartException.class);
+    }
+
+    @Test
+    void checkout_emptyCart_neverAttemptsPayment() {
+        // empty-cart check must run BEFORE payment processing, not after.
+        // Getting the right exception type (the test above) isn't enough
+        Cart cart = Cart.forGuestToken("guest-1");
+        when(cartRepository.findByGuestToken("guest-1")).thenReturn(Optional.of(cart));
+
+        CheckoutRequest request = new CheckoutRequest();
+        request.setPaymentType("CASH_ON_DELIVERY");
+
+        assertThatThrownBy(() -> orderService.checkout("jane@example.com", "guest-1", request))
+                .isInstanceOf(EmptyCartException.class);
+
+        verify(cashOnDeliverySpy, never()).process(any());
     }
 
     @Test

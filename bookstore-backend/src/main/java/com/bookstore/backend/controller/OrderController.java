@@ -7,14 +7,16 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 /**
  * Every endpoint here requires authentication (enforced by SecurityConfig).
- * The authenticated caller's identity comes from the Authentication
- * principal — set by JwtAuthenticationFilter to the user's email
+ * The authenticated caller's identity comes from SecurityContextHolder —
+ * set by JwtAuthenticationFilter to the user's email — never from a
+ * request parameter.
  */
 @RestController
 @RequestMapping("/api/v1")
@@ -29,20 +31,24 @@ public class OrderController {
     }
 
     @PostMapping("/orders")
-    public ResponseEntity<OrderResponse> checkout(Authentication authentication,
-                                                   @RequestHeader(GUEST_TOKEN_HEADER) String guestToken,
+    public ResponseEntity<OrderResponse> checkout(@RequestHeader(GUEST_TOKEN_HEADER) String guestToken,
                                                    @Valid @RequestBody CheckoutRequest request) {
-        OrderResponse response = orderService.checkout(authentication.getName(), guestToken, request);
+        OrderResponse response = orderService.checkout(currentUserEmail(), guestToken, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/orders")
-    public ResponseEntity<List<OrderResponse>> listMyOrders(Authentication authentication) {
-        return ResponseEntity.ok(orderService.listMyOrders(authentication.getName()));
+    public ResponseEntity<List<OrderResponse>> listMyOrders() {
+        return ResponseEntity.ok(orderService.listMyOrders(currentUserEmail()));
     }
 
     @GetMapping("/orders/{id}")
-    public ResponseEntity<OrderResponse> getMyOrder(Authentication authentication, @PathVariable Long id) {
-        return ResponseEntity.ok(orderService.getMyOrder(authentication.getName(), id));
+    public ResponseEntity<OrderResponse> getMyOrder(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.getMyOrder(currentUserEmail(), id));
+    }
+
+    private String currentUserEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName();
     }
 }

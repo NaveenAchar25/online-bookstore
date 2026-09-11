@@ -5,15 +5,12 @@ import com.bookstore.backend.dto.OrderResponse;
 import com.bookstore.backend.exception.EmptyCartException;
 import com.bookstore.backend.exception.OrderNotFoundException;
 import com.bookstore.backend.exception.UnsupportedPaymentTypeException;
-import com.bookstore.backend.model.Book;
 import com.bookstore.backend.model.Cart;
-import com.bookstore.backend.model.CartItem;
 import com.bookstore.backend.model.Order;
 import com.bookstore.backend.model.User;
 import com.bookstore.backend.payment.PaymentMethod;
 import com.bookstore.backend.payment.PaymentRequest;
 import com.bookstore.backend.payment.PaymentResult;
-import com.bookstore.backend.repository.BookRepository;
 import com.bookstore.backend.repository.CartRepository;
 import com.bookstore.backend.repository.OrderRepository;
 import com.bookstore.backend.repository.UserRepository;
@@ -23,27 +20,23 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-
 @Service
 @Transactional
 @Slf4j
 public class OrderService {
 
     private final CartRepository cartRepository;
-    private final BookRepository bookRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final List<PaymentMethod> paymentMethods;
     private final OrderMapper mapper;
 
     public OrderService(CartRepository cartRepository,
-                         BookRepository bookRepository,
                          OrderRepository orderRepository,
                          UserRepository userRepository,
                          List<PaymentMethod> paymentMethods,
                          OrderMapper mapper) {
         this.cartRepository = cartRepository;
-        this.bookRepository = bookRepository;
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.paymentMethods = paymentMethods;
@@ -58,20 +51,31 @@ public class OrderService {
         Cart cart = cartRepository.findByGuestToken(guestToken)
                 .orElseThrow(EmptyCartException::new);
 
+        // Checked here, before payment runs — not left to Order.createFrom()
+        // alone. Order.createFrom() still checks this too (it must: nothing
+        // stops a future caller from reaching it some other way), but that
+        // check happening AFTER paymentMethod.process() below would mean an
+        // empty-cart checkout attempts to charge a payment method before
+        // the request is even validated as meaningful. 
+        if (cart.getItems().isEmpty()) {
+            throw new EmptyCartException();
+        }
+
         PaymentMethod paymentMethod = resolvePaymentMethod(request.getPaymentType());
         PaymentResult paymentResult = paymentMethod.process(
                 new PaymentRequest(cart.getTotalAmount(), request.getCardNumber(), request.getCardExpiry()));
 
         Order order = Order.createFrom(cart, user, request.getPaymentType(), paymentResult);
 
-        // Book.decrementStock() already mutated each managed Book entity in
-        // memory; these saves make the persistence intent explicit rather
-        // than relying silently on Hibernate's dirty-checking flush, the
-        // same convention used everywhere else in this codebase.
-        for (CartItem item : cart.getItems()) {
-            Book book = item.getBook();
-            bookRepository.save(book);
-        }
+        // No explicit bookRepository.save() here, deliberately — each
+        // Book was loaded through cart.getItems() within this same
+        // transaction, so it's already a managed entity in Hibernate's
+        // persistence context. Book.decrementStock(), called inside
+        // Order.createFrom() above, mutated that managed instance
+        // directly; Hibernate's own dirty-checking flushes that change
+        // automatically at commit. An explicit save() here would be a
+        // redundant merge() call on an object already identical to what's
+        // being tracked
 
         Order saved = orderRepository.save(order);
 

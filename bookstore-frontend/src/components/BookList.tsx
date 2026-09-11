@@ -7,7 +7,7 @@ import Pagination from './Pagination';
 import type { Book } from '../types/Book';
 import type { PagedResponse } from '../types/Page';
 
-const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+const currencyFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' });
 const SEARCH_DEBOUNCE_MS = 350;
 
 export default function BookList() {
