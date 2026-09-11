@@ -1,6 +1,7 @@
 package com.bookstore.backend.service;
 
 import com.bookstore.backend.dto.BookDto;
+import com.bookstore.backend.dto.PagedResponse;
 import com.bookstore.backend.exception.BookNotFoundException;
 import com.bookstore.backend.model.Book;
 import com.bookstore.backend.repository.BookRepository;
@@ -10,6 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -18,7 +22,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -34,10 +37,12 @@ class BookServiceTest {
     private BookService bookService;
 
     private Book sampleBook;
+    private Pageable pageable;
 
     @BeforeEach
     void setUp() {
         bookService = new BookService(bookRepository, new BookMapper());
+        pageable = PageRequest.of(0, 12);
 
         sampleBook = Book.builder()
                 .id(1L)
@@ -51,27 +56,50 @@ class BookServiceTest {
     }
 
     @Test
-    @DisplayName("getAllBooks() returns every book mapped to a DTO")
-    void getAllBooks_returnsMappedList() {
-        when(bookRepository.findAll()).thenReturn(List.of(sampleBook));
+    @DisplayName("getAllBooks() with no query browses via plain findAll(Pageable)")
+    void getAllBooks_noQuery_usesPlainFindAll() {
+        when(bookRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(sampleBook), pageable, 1));
 
-        List<BookDto> result = bookService.getAllBooks();
+        PagedResponse<BookDto> result = bookService.getAllBooks(null, pageable);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getTitle()).isEqualTo("Clean Code");
-        assertThat(result.get(0).getAuthor()).isEqualTo("Robert C. Martin");
-        assertThat(result.get(0).getPrice()).isEqualByComparingTo("35.99");
-        verify(bookRepository).findAll();
+        assertThat(result.getItems()).hasSize(1);
+        assertThat(result.getItems().get(0).getTitle()).isEqualTo("Clean Code");
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getPage()).isZero();
     }
 
     @Test
-    @DisplayName("getAllBooks() returns an empty list when the catalog is empty")
-    void getAllBooks_emptyCatalog_returnsEmptyList() {
-        when(bookRepository.findAll()).thenReturn(List.of());
+    @DisplayName("getAllBooks() with a blank query also browses, not searches")
+    void getAllBooks_blankQuery_usesPlainFindAll() {
+        when(bookRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(sampleBook), pageable, 1));
 
-        List<BookDto> result = bookService.getAllBooks();
+        bookService.getAllBooks("   ", pageable);
 
-        assertThat(result).isEmpty();
+        // No exception, no call to the search method — verified implicitly:
+        // Mockito would fail this test with an UnnecessaryStubbingException
+        // in strict mode if findAll(Pageable) were never actually invoked.
+    }
+
+    @Test
+    @DisplayName("getAllBooks() with a query searches title and author")
+    void getAllBooks_withQuery_usesSearchMethod() {
+        when(bookRepository.findByTitleContainingIgnoreCaseOrAuthorContainingIgnoreCase("clean", "clean", pageable))
+                .thenReturn(new PageImpl<>(List.of(sampleBook), pageable, 1));
+
+        PagedResponse<BookDto> result = bookService.getAllBooks("clean", pageable);
+
+        assertThat(result.getItems()).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("getAllBooks() returns an empty page when nothing matches")
+    void getAllBooks_noMatches_returnsEmptyPage() {
+        when(bookRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(), pageable, 0));
+
+        PagedResponse<BookDto> result = bookService.getAllBooks(null, pageable);
+
+        assertThat(result.getItems()).isEmpty();
+        assertThat(result.getTotalElements()).isZero();
     }
 
     @Test

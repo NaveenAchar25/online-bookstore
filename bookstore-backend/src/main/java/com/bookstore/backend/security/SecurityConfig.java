@@ -52,9 +52,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/cart/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/api/v1/orders/**").authenticated()
                         .anyRequest().authenticated()
                 )
-                // H2 console renders in a frame; same-origin framing only, and dev-only.
+                // H2 console renders in a frame; same-origin framing only, and dev-only anyway.
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .exceptionHandling(handling -> handling.authenticationEntryPoint(restAuthenticationEntryPoint))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

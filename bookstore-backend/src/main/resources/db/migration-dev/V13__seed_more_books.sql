@@ -1,0 +1,27 @@
+-- Demo data only, same as V2 — dev profile exclusively, never reaches prod.
+-- Added as a NEW migration rather than editing V2
+INSERT INTO books (title, author, price, stock_quantity, isbn, description) VALUES
+('Effective Python', 'Brett Slatkin', 38.50, 18, '9780134853987', 'Ways to write better Python'),
+('Effective TypeScript', 'Dan Vanderkam', 36.00, 14, '9781492053743', 'Ways to improve your TypeScript'),
+('You Don''t Know JS Yet', 'Kyle Simpson', 24.99, 22, '9781491924464', 'Get into the deeper mechanics of JavaScript'),
+('Eloquent JavaScript', 'Marijn Haverbeke', 29.99, 19, '9781593279509', 'A modern introduction to programming'),
+('JavaScript: The Good Parts', 'Douglas Crockford', 27.50, 11, '9780596517748', 'Unearthing the excellent features of JavaScript'),
+('Head First Design Patterns', 'Eric Freeman, Elisabeth Robson', 41.00, 13, '9781492078005', 'Building extensible and maintainable object-oriented software'),
+('Patterns of Enterprise Application Architecture', 'Martin Fowler', 48.00, 7, '9780321127426', 'A catalog of enterprise application design patterns'),
+('UML Distilled', 'Martin Fowler', 32.00, 9, '9780321193681', 'A brief guide to the standard object modeling language'),
+('Test-Driven Development: By Example', 'Kent Beck', 34.50, 16, '9780321146533', 'Learning TDD through worked examples'),
+('Working Effectively with Legacy Code', 'Michael Feathers', 37.00, 10, '9780131177055', 'Techniques for safely modifying code you did not write'),
+('The Clean Coder', 'Robert C. Martin', 31.99, 17, '9780137081073', 'A code of conduct for professional programmers'),
+('Clean Architecture', 'Robert C. Martin', 36.50, 21, '9780134494166', 'A craftsman''s guide to software structure and design'),
+('Building Microservices', 'Sam Newman', 43.00, 12, '9781492034025', 'Designing fine-grained systems'),
+('Site Reliability Engineering', 'Betsy Beyer, Chris Jones, Jennifer Petoff, Niall Murphy', 44.99, 8, '9781491929124', 'How Google runs production systems'),
+('Designing Data-Intensive Applications', 'Martin Kleppmann', 49.99, 15, '9781449373320', 'The big ideas behind reliable, scalable, and maintainable systems'),
+('Database Internals', 'Alex Petrov', 42.00, 9, '9781492040347', 'A deep dive into how distributed data systems work'),
+('SQL Performance Explained', 'Markus Winand', 28.00, 20, '9783950307825', 'Everything developers need to know about SQL performance'),
+('Java Concurrency in Practice', 'Brian Goetz', 39.50, 11, '9780321349606', 'Building safe, correct, and efficient concurrent Java programs'),
+('Spring in Action', 'Craig Walls', 40.00, 23, '9781617297571', 'A guide to the Spring Framework'),
+('Spring Boot in Action', 'Craig Walls', 35.50, 18, '9781617292545', 'A guide to building applications with Spring Boot'),
+('Kubernetes Up and Running', 'Kelsey Hightower, Brendan Burns, Joe Beda', 41.50, 14, '9781098110208', 'Dive into the future of infrastructure'),
+('Docker Deep Dive', 'Nigel Poulton', 27.99, 16, '9798730860814', 'Zero to Docker in a single book'),
+('The Phoenix Project', 'Gene Kim, Kevin Behr, George Spafford', 26.00, 25, '9780988262591', 'A novel about IT, DevOps, and helping your business win'),
+('Accelerate', 'Nicole Forsgren, Jez Humble, Gene Kim', 33.00, 10, '9781942788331', 'Building and scaling high performing technology organizations');

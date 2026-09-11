@@ -3,6 +3,7 @@ package com.bookstore.backend.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -66,6 +67,43 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidRefreshToken(InvalidRefreshTokenException ex,
                                                                       HttpServletRequest request) {
         return buildResponse(HttpStatus.UNAUTHORIZED, ex.getMessage(), request, null);
+    }
+
+    @ExceptionHandler(EmptyCartException.class)
+    public ResponseEntity<ErrorResponse> handleEmptyCart(EmptyCartException ex,
+                                                            HttpServletRequest request) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null);
+    }
+
+    @ExceptionHandler(UnsupportedPaymentTypeException.class)
+    public ResponseEntity<ErrorResponse> handleUnsupportedPaymentType(UnsupportedPaymentTypeException ex,
+                                                                         HttpServletRequest request) {
+        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage(), request, null);
+    }
+
+    @ExceptionHandler(PaymentDeclinedException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentDeclined(PaymentDeclinedException ex,
+                                                                   HttpServletRequest request) {
+        return buildResponse(HttpStatus.PAYMENT_REQUIRED, ex.getMessage(), request, null);
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleOrderNotFound(OrderNotFoundException ex,
+                                                                HttpServletRequest request) {
+        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage(), request, null);
+    }
+
+    /**
+     * Thrown by Spring Data JPA (translated from Hibernate's own
+     * OptimisticLockException) when a save() finds the row's @Version no
+     * longer matches what was read — i.e. two checkouts raced for the same
+     * book's last copy, and this one lost.
+     */
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLockConflict(ObjectOptimisticLockingFailureException ex,
+                                                                         HttpServletRequest request) {
+        return buildResponse(HttpStatus.CONFLICT,
+                "This item was updated by another request. Please try again.", request, null);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

@@ -34,8 +34,59 @@ class BookCatalogIntegrationTest {
                 .uri(baseUrl("/books"))
                 .exchange()
                 .expectStatus().isOk()
-                .expectBody(Object[].class)
-                .value(books -> assertThat(books).hasSizeGreaterThanOrEqualTo(6));
+                .expectBody(String.class)
+                .value(body -> {
+                    assertThat(body).contains("\"items\"");
+                    assertThat(body).contains("\"totalElements\"");
+                });
+    }
+
+    @Test
+    void getAllBooks_defaultPageSize_returnsAtMostTwelveItems() {
+        restTestClient.get()
+                .uri(baseUrl("/books"))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class)
+                .value(body -> assertThat(body).contains("\"size\":12"));
+    }
+
+    @Test
+    void getAllBooks_withSearchQuery_returnsOnlyMatchingBooks() {
+        // V13's seed data adds two "Effective ___" titles alongside the
+        // original catalog — searching for "effective" should exclude
+        // everything else, proving the search path (not just the browse
+        // path) genuinely runs.
+        restTestClient.get()
+                .uri(baseUrl("/books?q=effective"))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class)
+                .value(body -> {
+                    assertThat(body.toLowerCase()).contains("effective");
+                    assertThat(body).doesNotContain("\"title\":\"Clean Code\"");
+                });
+    }
+
+    @Test
+    void getAllBooks_withPageParam_returnsADifferentSetOfBooks() {
+        String firstPage = restTestClient.get()
+                .uri(baseUrl("/books?page=0&size=5"))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class)
+                .returnResult()
+                .getResponseBody();
+
+        String secondPage = restTestClient.get()
+                .uri(baseUrl("/books?page=1&size=5"))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody(String.class)
+                .returnResult()
+                .getResponseBody();
+
+        assertThat(firstPage).isNotEqualTo(secondPage);
     }
 
     @Test

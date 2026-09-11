@@ -1,5 +1,6 @@
 package com.bookstore.backend.model;
 
+import com.bookstore.backend.exception.InsufficientStockException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,7 +12,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 
@@ -22,7 +22,6 @@ import java.math.BigDecimal;
 @Entity
 @Table(name = "books")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -66,5 +65,17 @@ public class Book extends Auditable {
      */
     public boolean hasSufficientStock(int requestedQuantity) {
         return stockQuantity >= requestedQuantity;
+    }
+
+    /**
+     * The only way stock ever decreases. Re-checks sufficiency itself rather
+     * than trusting a caller who might have checked stale data — checkout
+     * calls this at the actual moment of purchase
+     */
+    public void decrementStock(int quantity) {
+        if (!hasSufficientStock(quantity)) {
+            throw new InsufficientStockException(title, quantity, stockQuantity);
+        }
+        this.stockQuantity -= quantity;
     }
 }

@@ -1,6 +1,7 @@
 package com.bookstore.backend.controller;
 
 import com.bookstore.backend.dto.BookDto;
+import com.bookstore.backend.dto.PagedResponse;
 import com.bookstore.backend.exception.BookNotFoundException;
 import com.bookstore.backend.repository.UserRepository;
 import com.bookstore.backend.security.JwtService;
@@ -9,13 +10,17 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -51,23 +56,38 @@ class BookControllerTest {
                 .id(1L).title("Clean Code").author("Robert C. Martin")
                 .price(new BigDecimal("35.99")).stockQuantity(10)
                 .build();
-        when(bookService.getAllBooks()).thenReturn(List.of(book));
+        PagedResponse<BookDto> page = PagedResponse.<BookDto>builder()
+                .items(List.of(book)).page(0).size(12).totalElements(1).totalPages(1).build();
+        when(bookService.getAllBooks(isNull(), any(Pageable.class))).thenReturn(page);
 
         mockMvc.perform(get("/api/v1/books"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value("Clean Code"))
-                .andExpect(jsonPath("$[0].author").value("Robert C. Martin"))
-                .andExpect(jsonPath("$[0].price").value(35.99));
+                .andExpect(jsonPath("$.items[0].title").value("Clean Code"))
+                .andExpect(jsonPath("$.items[0].author").value("Robert C. Martin"))
+                .andExpect(jsonPath("$.items[0].price").value(35.99))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test
-    void getAllBooks_emptyCatalog_returns200AndEmptyArray() throws Exception {
-        when(bookService.getAllBooks()).thenReturn(List.of());
+    void getAllBooks_emptyCatalog_returns200AndEmptyItems() throws Exception {
+        PagedResponse<BookDto> page = PagedResponse.<BookDto>builder()
+                .items(List.of()).page(0).size(12).totalElements(0).totalPages(0).build();
+        when(bookService.getAllBooks(isNull(), any(Pageable.class))).thenReturn(page);
 
         mockMvc.perform(get("/api/v1/books"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$").isEmpty());
+                .andExpect(jsonPath("$.items").isArray())
+                .andExpect(jsonPath("$.items").isEmpty());
+    }
+
+    @Test
+    void getAllBooks_withSearchQuery_passesItThrough() throws Exception {
+        PagedResponse<BookDto> page = PagedResponse.<BookDto>builder()
+                .items(List.of()).page(0).size(12).totalElements(0).totalPages(0).build();
+        when(bookService.getAllBooks(eq("python"), any(Pageable.class))).thenReturn(page);
+
+        mockMvc.perform(get("/api/v1/books").param("q", "python"))
+                .andExpect(status().isOk());
     }
 
     @Test
