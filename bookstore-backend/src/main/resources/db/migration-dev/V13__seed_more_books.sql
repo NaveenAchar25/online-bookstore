@@ -11,7 +11,7 @@ INSERT INTO books (title, author, price, stock_quantity, isbn, description) VALU
 ('UML Distilled', 'Martin Fowler', 32.00, 9, '9780321193681', 'A brief guide to the standard object modeling language'),
 ('Test-Driven Development: By Example', 'Kent Beck', 34.50, 16, '9780321146533', 'Learning TDD through worked examples'),
 ('Working Effectively with Legacy Code', 'Michael Feathers', 37.00, 10, '9780131177055', 'Techniques for safely modifying code you did not write'),
-('The Clean Coder', 'Robert C. Martin', 31.99, 17, '9780137081073', 'A code of conduct for professional programmers'),
+('Design complex applications', 'Robert C. Martin', 31.99, 17, '9780137081073', 'A code of conduct for professional programmers'),
 ('Clean Architecture', 'Robert C. Martin', 36.50, 21, '9780134494166', 'A craftsman''s guide to software structure and design'),
 ('Building Microservices', 'Sam Newman', 43.00, 12, '9781492034025', 'Designing fine-grained systems'),
 ('Site Reliability Engineering', 'Betsy Beyer, Chris Jones, Jennifer Petoff, Niall Murphy', 44.99, 8, '9781491929124', 'How Google runs production systems'),
