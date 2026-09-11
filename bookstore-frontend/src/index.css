@@ -5,6 +5,7 @@
   --color-accent: #2f5233;
   --color-accent-dark: #1d3320;
   --color-border: #d8d2c2;
+  --color-danger: #a32d2d;
 
   --font-serif: 'Iowan Old Style', 'Georgia', 'Times New Roman', serif;
   --font-sans: -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -29,12 +30,330 @@ h1 {
   margin: 0 0 0.75rem;
 }
 
+button {
+  padding: 0.5rem 1rem;
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--color-accent-dark);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .app-main {
   max-width: 720px;
   margin: 0 auto;
   padding: 2.5rem 2rem;
 }
 
-.home-page p {
+.state-message {
   color: var(--color-ink-muted);
+}
+
+.state-message--error {
+  color: var(--color-danger);
+}
+
+.field-error {
+  margin: 0.5rem 0 0;
+  color: var(--color-danger);
+  font-size: 0.85rem;
+}
+
+/* ---------- Nav bar ---------- */
+
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.nav-bar__brand {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  text-decoration: none;
+  color: var(--color-ink);
+}
+
+.nav-bar__links {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.nav-bar__links a {
+  color: var(--color-accent-dark);
+  text-decoration: none;
+}
+
+.nav-bar__links a:hover {
+  text-decoration: underline;
+}
+
+.nav-bar__link-button {
+  background: none;
+  border: none;
+  font: inherit;
+  color: var(--color-accent-dark);
+  cursor: pointer;
+  padding: 0;
+}
+
+/* ---------- Book catalog ---------- */
+
+.book-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.book-table th {
+  text-align: left;
+  font-weight: 400;
+  color: var(--color-ink-muted);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.5rem 0.75rem;
+}
+
+.book-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.book-table__title a {
+  font-family: var(--font-serif);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.book-table__title a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Book detail ---------- */
+
+.book-detail-page {
+  max-width: 480px;
+}
+
+.book-detail-page__back-link {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  color: var(--color-accent-dark);
+  text-decoration: none;
+}
+
+.book-detail-page__author {
+  color: var(--color-ink-muted);
+  margin-top: -0.5rem;
+}
+
+.book-detail-page__price {
+  font-size: 1.25rem;
+}
+
+.book-detail-page__description {
+  margin-top: 1.5rem;
+}
+
+.book-detail-page__stock {
+  color: var(--color-ink-muted);
+  font-size: 0.9rem;
+}
+
+.book-detail-page__add-to-cart {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.book-detail-page__add-to-cart input {
+  width: 4rem;
+  padding: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font: inherit;
+}
+
+/* ---------- Cart ---------- */
+
+.cart-page {
+  max-width: 640px;
+}
+
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+}
+
+.cart-table th {
+  text-align: left;
+  font-weight: 400;
+  color: var(--color-ink-muted);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.5rem 0.75rem;
+}
+
+.cart-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.cart-table__quantity-input {
+  width: 3.5rem;
+  padding: 0.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font: inherit;
+}
+
+.cart-page__total {
+  margin-top: 1.5rem;
+  font-size: 1.2rem;
+  text-align: right;
+}
+
+/* ---------- Auth (login / register) ---------- */
+
+.auth-page {
+  max-width: 360px;
+}
+
+.auth-page form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.auth-page label {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--color-ink-muted);
+}
+
+.auth-page input {
+  padding: 0.55rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font: inherit;
+  background: white;
+}
+
+.auth-page button {
+  margin-top: 1.5rem;
+}
+
+/* ---------- Book list: search + pagination ---------- */
+
+.book-list__search {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 1.25rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font: inherit;
+  background: white;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.pagination__status {
+  color: var(--color-ink-muted);
+  font-size: 0.9rem;
+}
+
+/* ---------- Checkout ---------- */
+
+.checkout-page {
+  max-width: 480px;
+}
+
+.checkout-page form {
+  margin-top: 1.5rem;
+}
+
+.checkout-page__payment-choice {
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 1rem;
+  margin: 0 0 1rem;
+}
+
+.checkout-page__payment-choice legend {
+  padding: 0 0.4rem;
+  color: var(--color-ink-muted);
+  font-size: 0.9rem;
+}
+
+.checkout-page__payment-choice label {
+  display: block;
+  margin: 0.4rem 0;
+  cursor: pointer;
+}
+
+.checkout-page label[for] {
+  display: block;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--color-ink-muted);
+}
+
+.checkout-page input[type='text'],
+.checkout-page input:not([type='radio']) {
+  width: 100%;
+  padding: 0.55rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font: inherit;
+  background: white;
+}
+
+.checkout-page button[type='submit'] {
+  margin-top: 1.5rem;
+}
+
+.cart-page__checkout-link {
+  display: inline-block;
+  margin-top: 1.5rem;
+  color: white;
+  background: var(--color-accent);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.cart-page__checkout-link:hover {
+  background: var(--color-accent-dark);
+}
+
+/* ---------- Order confirmation / history ---------- */
+
+.order-confirmation-page,
+.my-orders-page {
+  max-width: 480px;
+}
+
+.order-confirmation-page__status {
+  color: var(--color-ink-muted);
+  margin-top: -0.5rem;
 }
